@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weekly Meal Planner</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    :root {
+      --cream: #FFF8F0;
+      --sage: #8B9D83;
+      --dark-sage: #6B7D63;
+      --terracotta: #D4705B;
+      --charcoal: #2D2D2D;
+      --warm-white: #FFFCF7;
+      --light-sage: #C8D5C0;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: linear-gradient(135deg, var(--cream) 0%, var(--warm-white) 100%);
+      color: var(--charcoal);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+      animation: fadeInDown 0.8s ease-out;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.5rem;
+      color: var(--charcoal);
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .tagline {
+      font-size: 1.1rem;
+      color: var(--sage);
+      font-weight: 500;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid var(--light-sage);
+      animation: fadeIn 0.8s ease-out 0.2s both;
+    }
+
+    .tab {
+      padding: 1rem 2rem;
+      background: none;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--sage);
+      cursor: pointer;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .tab:hover {
+      color: var(--dark-sage);
+    }
+
+    .tab.active {
+      color: var(--terracotta);
+    }
+
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--terracotta);
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .content {
+      animation: fadeIn 0.6s ease-out 0.4s both;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 20px rgba(139, 157, 131, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      box-shadow: 0 8px 30px rgba(139, 157, 131, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .btn {
+      padding: 0.875rem 1.75rem;
+      border: none;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background: var(--terracotta);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #C25F4D;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(212, 112, 91, 0.3);
+    }
+
+    .btn-secondary {
+      background: var(--sage);
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: var(--dark-sage);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--sage);
+      color: var(--sage);
+    }
+
+    .btn-outline:hover {
+      background: var(--sage);
+      color: white;
+    }
+
+    .btn-small {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+    }
+
+    .btn-danger {
+      background: #E57373;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #D32F2F;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 0.875rem;
+      border: 2px solid var(--light-sage);
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: var(--warm-white);
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--sage);
+      background: white;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: var(--charcoal);
+    }
+
+    .ingredient-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+      align-items: end;
+    }
+
+    .recipe-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .recipe-card {
+      background: white;
+      border-radius: 16px;
+      padding: 1.5rem;
+      border: 2px solid var(--light-sage);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .recipe-card:hover {
+      border-color: var(--sage);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(139, 157, 131, 0.2);
+    }
+
+    .recipe-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      margin-bottom: 0.75rem;
+      color: var(--charcoal);
+    }
+
+    .recipe-card .ingredient-count {
+      color: var(--sage);
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+    }
+
+    .week-planner {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .day-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      border-left: 4px solid var(--terracotta);
+    }
+
+    .day-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .day-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem;
+      color: var(--charcoal);
+    }
+
+    .meal-slot {
+      background: var(--warm-white);
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .meal-slot.selected {
+      background: var(--light-sage);
+      border: 2px solid var(--sage);
+    }
+
+    .shopping-list {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+    }
+
+    .shopping-list h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+      color: var(--charcoal);
+    }
+
+    .shopping-item {
+      display: flex;
+      align-items: center;
+      padding: 1rem;
+      background: var(--warm-white);
+      border-radius: 10px;
+      margin-bottom: 0.75rem;
+      transition: all 0.2s ease;
+    }
+
+    .shopping-item:hover {
+      background: var(--light-sage);
+    }
+
+    .shopping-item input[type="checkbox"] {
+      width: 24px;
+      height: 24px;
+      margin-right: 1rem;
+      cursor: pointer;
+      accent-color: var(--terracotta);
+    }
+
+    .shopping-item.checked {
+      opacity: 0.5;
+      text-decoration: line-through;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--sage);
+    }
+
+    .empty-state h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    select {
+      width: 100%;
+      padding: 0.875rem;
+      border: 2px solid var(--light-sage);
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      background: var(--warm-white);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: var(--sage);
+      background: white;
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(45, 45, 45, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      padding: 2.5rem;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      animation: slideUp 0.3s ease-out;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      color: var(--charcoal);
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 2rem;
+      color: var(--sage);
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .close-btn:hover {
+      background: var(--light-sage);
+      color: var(--charcoal);
+    }
+
+    .recipe-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeInDown {
+      from { 
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to { 
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: scaleX(0);
+      }
+      to {
+        transform: scaleX(1);
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2.5rem;
+      }
+
+      .tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .tab {
+        padding: 0.875rem 1.5rem;
+        white-space: nowrap;
+      }
+
+      .ingredient-row {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-content {
+        margin: 1rem;
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    function App() {
+      const [activeTab, setActiveTab] = useState('recipes');
+      const [recipes, setRecipes] = useState([]);
+      const [weekPlan, setWeekPlan] = useState({});
+      const [shoppingList, setShoppingList] = useState({});
+      const [showRecipeForm, setShowRecipeForm] = useState(false);
+      const [showRecipeSelector, setShowRecipeSelector] = useState(null);
+
+      // Load data from localStorage
+      useEffect(() => {
+        const savedRecipes = localStorage.getItem('mealPlannerRecipes');
+        const savedWeekPlan = localStorage.getItem('mealPlannerWeekPlan');
+        const savedShoppingList = localStorage.getItem('mealPlannerShoppingList');
+
+        if (savedRecipes) setRecipes(JSON.parse(savedRecipes));
+        if (savedWeekPlan) setWeekPlan(JSON.parse(savedWeekPlan));
+        if (savedShoppingList) setShoppingList(JSON.parse(savedShoppingList));
+      }, []);
+
+      // Save data to localStorage
+      useEffect(() => {
+        localStorage.setItem('mealPlannerRecipes', JSON.stringify(recipes));
+      }, [recipes]);
+
+      useEffect(() => {
+        localStorage.setItem('mealPlannerWeekPlan', JSON.stringify(weekPlan));
+      }, [weekPlan]);
+
+      useEffect(() => {
+        localStorage.setItem('mealPlannerShoppingList', JSON.stringify(shoppingList));
+      }, [shoppingList]);
+
+      // Generate shopping list from week plan
+      useEffect(() => {
+        const ingredients = {};
+        
+        Object.values(weekPlan).forEach(day => {
+          Object.values(day).forEach(recipeId => {
+            const recipe = recipes.find(r => r.id === recipeId);
+            if (recipe) {
+              recipe.ingredients.forEach(ing => {
+                const key = `${ing.name.toLowerCase()}-${ing.unit}`;
+                if (ingredients[key]) {
+                  ingredients[key].amount += parseFloat(ing.amount) || 0;
+                } else {
+                  ingredients[key] = {
+                    name: ing.name,
+                    amount: parseFloat(ing.amount) || 0,
+                    unit: ing.unit,
+                    checked: shoppingList[key]?.checked || false
+                  };
+                }
+              });
+            }
+          });
+        });
+
+        setShoppingList(ingredients);
+      }, [weekPlan, recipes]);
+
+      const addRecipe = (recipe) => {
+        setRecipes([...recipes, { ...recipe, id: Date.now() }]);
+        setShowRecipeForm(false);
+      };
+
+      const deleteRecipe = (id) => {
+        if (confirm('Are you sure you want to delete this recipe?')) {
+          setRecipes(recipes.filter(r => r.id !== id));
+          // Remove from week plan
+          const newWeekPlan = { ...weekPlan };
+          Object.keys(newWeekPlan).forEach(day => {
+            Object.keys(newWeekPlan[day]).forEach(meal => {
+              if (newWeekPlan[day][meal] === id) {
+                delete newWeekPlan[day][meal];
+              }
+            });
+          });
+          setWeekPlan(newWeekPlan);
+        }
+      };
+
+      const assignRecipeToMeal = (day, meal, recipeId) => {
+        setWeekPlan({
+          ...weekPlan,
+          [day]: {
+            ...weekPlan[day],
+            [meal]: recipeId
+          }
+        });
+        setShowRecipeSelector(null);
+      };
+
+      const removeRecipeFromMeal = (day, meal) => {
+        const newWeekPlan = { ...weekPlan };
+        if (newWeekPlan[day]) {
+          delete newWeekPlan[day][meal];
+          if (Object.keys(newWeekPlan[day]).length === 0) {
+            delete newWeekPlan[day];
+          }
+        }
+        setWeekPlan(newWeekPlan);
+      };
+
+      const toggleShoppingItem = (key) => {
+        setShoppingList({
+          ...shoppingList,
+          [key]: {
+            ...shoppingList[key],
+            checked: !shoppingList[key].checked
+          }
+        });
+      };
+
+      return (
+        <div className="container">
+          <header>
+            <h1>Weekly Meal Planner</h1>
+            <p className="tagline">Plan your meals, generate your shopping list</p>
+          </header>
+
+          <div className="tabs">
+            <button 
+              className={`tab ${activeTab === 'recipes' ? 'active' : ''}`}
+              onClick={() => setActiveTab('recipes')}
+            >
+              My Recipes
+            </button>
+            <button 
+              className={`tab ${activeTab === 'planner' ? 'active' : ''}`}
+              onClick={() => setActiveTab('planner')}
+            >
+              Week Planner
+            </button>
+            <button 
+              className={`tab ${activeTab === 'shopping' ? 'active' : ''}`}
+              onClick={() => setActiveTab('shopping')}
+            >
+              Shopping List
+            </button>
+          </div>
+
+          <div className="content">
+            {activeTab === 'recipes' && (
+              <RecipesTab 
+                recipes={recipes}
+                onAddRecipe={() => setShowRecipeForm(true)}
+                onDeleteRecipe={deleteRecipe}
+              />
+            )}
+
+            {activeTab === 'planner' && (
+              <PlannerTab 
+                weekPlan={weekPlan}
+                recipes={recipes}
+                onSelectMeal={(day, meal) => setShowRecipeSelector({ day, meal })}
+                onRemoveMeal={removeRecipeFromMeal}
+              />
+            )}
+
+            {activeTab === 'shopping' && (
+              <ShoppingTab 
+                shoppingList={shoppingList}
+                onToggleItem={toggleShoppingItem}
+              />
+            )}
+          </div>
+
+          {showRecipeForm && (
+            <RecipeFormModal 
+              onClose={() => setShowRecipeForm(false)}
+              onSave={addRecipe}
+            />
+          )}
+
+          {showRecipeSelector && (
+            <RecipeSelectorModal 
+              recipes={recipes}
+              day={showRecipeSelector.day}
+              meal={showRecipeSelector.meal}
+              onClose={() => setShowRecipeSelector(null)}
+              onSelect={assignRecipeToMeal}
+            />
+          )}
+        </div>
+      );
+    }
+
+    function RecipesTab({ recipes, onAddRecipe, onDeleteRecipe }) {
+      const categories = ['Vegetarian', 'Fish', 'Meat'];
+
+      const viewRecipe = (recipe) => {
+        let content = `${recipe.name}\n\n`;
+        content += `INGREDIENTS:\n`;
+        recipe.ingredients.forEach(ing => {
+          content += `• ${ing.amount} ${ing.unit} ${ing.name}\n`;
+        });
+        if (recipe.instructions) {
+          content += `\nINSTRUCTIONS:\n${recipe.instructions}`;
+        }
+        alert(content);
+      };
+
+      return (
+        <div>
+          <div style={{ marginBottom: '2rem' }}>
+            <button className="btn btn-primary" onClick={onAddRecipe}>
+              ✨ Add New Recipe
+            </button>
+          </div>
+
+          {recipes.length === 0 ? (
+            <div className="empty-state">
+              <h3>No recipes yet</h3>
+              <p>Start by adding your favorite recipes from cookbooks or websites</p>
+            </div>
+          ) : (
+            <>
+              {categories.map(category => {
+                const categoryRecipes = recipes.filter(r => r.category === category);
+                if (categoryRecipes.length === 0) return null;
+
+                return (
+                  <div key={category} style={{ marginBottom: '2.5rem' }}>
+                    <h2 style={{ 
+                      fontFamily: "'Playfair Display', serif",
+                      fontSize: '1.75rem',
+                      marginBottom: '1rem',
+                      color: 'var(--charcoal)',
+                      borderBottom: '2px solid var(--light-sage)',
+                      paddingBottom: '0.5rem'
+                    }}>
+                      {category}
+                    </h2>
+                    <div className="recipe-grid">
+                      {categoryRecipes.map(recipe => (
+                        <div key={recipe.id} className="recipe-card">
+                          <h3>{recipe.name}</h3>
+                          <p className="ingredient-count">
+                            {recipe.ingredients.length} ingredients
+                          </p>
+                          <div className="recipe-actions">
+                            <button 
+                              className="btn btn-outline btn-small"
+                              onClick={() => viewRecipe(recipe)}
+                            >
+                              View Recipe
+                            </button>
+                            <button 
+                              className="btn btn-danger btn-small"
+                              onClick={() => onDeleteRecipe(recipe.id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          )}
+        </div>
+      );
+    }
+
+    function PlannerTab({ weekPlan, recipes, onSelectMeal, onRemoveMeal }) {
+      const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      const meals = ['Breakfast', 'Lunch', 'Dinner'];
+
+      return (
+        <div className="week-planner">
+          {days.map(day => (
+            <div key={day} className="day-card">
+              <div className="day-header">
+                <h3 className="day-name">{day}</h3>
+              </div>
+              
+              {meals.map(meal => {
+                const recipeId = weekPlan[day]?.[meal];
+                const recipe = recipes.find(r => r.id === recipeId);
+
+                return (
+                  <div key={meal} className={`meal-slot ${recipe ? 'selected' : ''}`}>
+                    <div>
+                      <strong>{meal}:</strong>{' '}
+                      {recipe ? recipe.name : 'Not planned'}
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button 
+                        className="btn btn-secondary btn-small"
+                        onClick={() => onSelectMeal(day, meal)}
+                      >
+                        {recipe ? 'Change' : 'Select'}
+                      </button>
+                      {recipe && (
+                        <button 
+                          className="btn btn-outline btn-small"
+                          onClick={() => onRemoveMeal(day, meal)}
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    function ShoppingTab({ shoppingList, onToggleItem }) {
+      const items = Object.entries(shoppingList);
+
+      return (
+        <div className="shopping-list">
+          <h2>🛒 Shopping List</h2>
+          
+          {items.length === 0 ? (
+            <div className="empty-state">
+              <h3>Your shopping list is empty</h3>
+              <p>Plan some meals for the week to generate your shopping list</p>
+            </div>
+          ) : (
+            <>
+              {items.map(([key, item]) => (
+                <div 
+                  key={key} 
+                  className={`shopping-item ${item.checked ? 'checked' : ''}`}
+                >
+                  <input 
+                    type="checkbox"
+                    checked={item.checked}
+                    onChange={() => onToggleItem(key)}
+                  />
+                  <span>
+                    <strong>{item.amount > 0 ? item.amount : ''} {item.unit}</strong> {item.name}
+                  </span>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+      );
+    }
+
+    function RecipeFormModal({ onClose, onSave }) {
+      const [name, setName] = useState('');
+      const [category, setCategory] = useState('Vegetarian');
+      const [instructions, setInstructions] = useState('');
+      const [ingredients, setIngredients] = useState([
+        { name: '', amount: '', unit: '' }
+      ]);
+
+      const addIngredient = () => {
+        setIngredients([...ingredients, { name: '', amount: '', unit: '' }]);
+      };
+
+      const updateIngredient = (index, field, value) => {
+        const newIngredients = [...ingredients];
+        newIngredients[index][field] = value;
+        setIngredients(newIngredients);
+      };
+
+      const removeIngredient = (index) => {
+        setIngredients(ingredients.filter((_, i) => i !== index));
+      };
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (name && ingredients.some(i => i.name)) {
+          onSave({
+            name,
+            category,
+            instructions,
+            ingredients: ingredients.filter(i => i.name)
+          });
+        }
+      };
+
+      return (
+        <div className="modal" onClick={onClose}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Add New Recipe</h2>
+              <button className="close-btn" onClick={onClose}>×</button>
+            </div>
+
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label>Recipe Name *</label>
+                <input 
+                  type="text"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  placeholder="e.g., Spaghetti Carbonara"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Category *</label>
+                <select 
+                  value={category}
+                  onChange={e => setCategory(e.target.value)}
+                >
+                  <option value="Vegetarian">Vegetarian</option>
+                  <option value="Fish">Fish</option>
+                  <option value="Meat">Meat</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Ingredients *</label>
+                {ingredients.map((ing, index) => (
+                  <div key={index} className="ingredient-row">
+                    <input 
+                      type="text"
+                      value={ing.name}
+                      onChange={e => updateIngredient(index, 'name', e.target.value)}
+                      placeholder="Ingredient name"
+                    />
+                    <input 
+                      type="number"
+                      step="0.01"
+                      value={ing.amount}
+                      onChange={e => updateIngredient(index, 'amount', e.target.value)}
+                      placeholder="Amount"
+                    />
+                    <input 
+                      type="text"
+                      value={ing.unit}
+                      onChange={e => updateIngredient(index, 'unit', e.target.value)}
+                      placeholder="Unit"
+                    />
+                    {ingredients.length > 1 && (
+                      <button 
+                        type="button"
+                        className="btn btn-danger btn-small"
+                        onClick={() => removeIngredient(index)}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button 
+                  type="button"
+                  className="btn btn-outline btn-small"
+                  onClick={addIngredient}
+                  style={{ marginTop: '0.5rem' }}
+                >
+                  + Add Ingredient
+                </button>
+              </div>
+
+              <div className="form-group">
+                <label>Instructions</label>
+                <textarea 
+                  value={instructions}
+                  onChange={e => setInstructions(e.target.value)}
+                  placeholder="Enter cooking instructions..."
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <button type="submit" className="btn btn-primary">
+                  Save Recipe
+                </button>
+                <button 
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={onClose}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      );
+    }
+
+    function RecipeSelectorModal({ recipes, day, meal, onClose, onSelect }) {
+      const [selectedId, setSelectedId] = useState('');
+
+      const handleSelect = () => {
+        if (selectedId) {
+          onSelect(day, meal, parseInt(selectedId));
+        }
+      };
+
+      return (
+        <div className="modal" onClick={onClose}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Select Recipe for {day} {meal}</h2>
+              <button className="close-btn" onClick={onClose}>×</button>
+            </div>
+
+            <div className="form-group">
+              <label>Choose a recipe:</label>
+              <select 
+                value={selectedId}
+                onChange={e => setSelectedId(e.target.value)}
+              >
+                <option value="">-- Select Recipe --</option>
+                {recipes.map(recipe => (
+                  <option key={recipe.id} value={recipe.id}>
+                    {recipe.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <button 
+                className="btn btn-primary"
+                onClick={handleSelect}
+                disabled={!selectedId}
+              >
+                Assign Recipe
+              </button>
+              <button 
+                className="btn btn-outline"
+                onClick={onClose}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
